@@ -12,6 +12,9 @@ body { background-color: #f5f5f5; }
 .card { border-radius: 12px; transition: 0.3s; }
 .card:hover { transform: scale(1.02); }
 .form-control { border-radius: 8px; }
+
+button { border-radius: 10px; }
+.progress { height: 20px; }
 </style>
 </head>
 
@@ -62,12 +65,12 @@ body { background-color: #f5f5f5; }
 <!-- Form -->
 <div class="card shadow mb-4 p-4">
 
-<h4 class="text-center text-primary mb-4">✨ Add Daily Habit</h4>
+<h4 class="text-center fw-bold text-dark mb-4">✨ Add Daily Habit</h4>
 
 <div class="row">
 
 <div class="col-md-3">
-<label>Habit</label>
+<label class="fw-bold fs-5">📌 Habit</label>
 <select id="habit" class="form-control">
 <option>Water</option>
 <option>Sleep</option>
@@ -76,25 +79,24 @@ body { background-color: #f5f5f5; }
 </div>
 
 <div class="col-md-3">
-<label>Value</label>
+<label class="fw-bold fs-5">📊 Value</label>
 <div class="input-group">
 <input id="value" type="number" min="1" class="form-control">
 <select id="unit" class="form-select">
 <option value="L">Lit</option>
 <option value="h">Hour</option>
-<option value="hr">Hr</option>
 <option value="min">Min</option>
 </select>
 </div>
 </div>
 
 <div class="col-md-3">
-<label>📅 Date</label>
+<label class="fw-bold fs-5">📅 Date</label>
 <input id="date" type="date" class="form-control">
 </div>
 
 <div class="col-md-3">
-<label>⏰ Time</label>
+<label class="fw-bold fs-5">⏰ Time</label>
 <input id="time" type="time" class="form-control">
 </div>
 
@@ -105,6 +107,11 @@ body { background-color: #f5f5f5; }
 <button onclick="resetData()" class="btn btn-danger">🗑 Reset</button>
 </div>
 
+</div>
+
+<!-- Summary -->
+<div class="alert alert-info text-center fw-bold">
+Today Summary → <span id="summaryText">0</span>
 </div>
 
 <!-- Table -->
@@ -159,25 +166,21 @@ let waterTarget = 4;
 let sleepTarget = 8;
 let exerciseTarget = 60;
 
-// Auto Date & Time
+// Auto date/time
 let now = new Date();
-document.getElementById("date").value = now.toISOString().split("T")[0];
+document.getElementById("date").value = today;
 
-let hours = now.getHours().toString().padStart(2,'0');
-let minutes = now.getMinutes().toString().padStart(2,'0');
-document.getElementById("time").value = hours + ":" + minutes;
+let h = now.getHours().toString().padStart(2,'0');
+let m = now.getMinutes().toString().padStart(2,'0');
+document.getElementById("time").value = h + ":" + m;
 
 // Convert to 12-hour
 function convertTo12Hour(time) {
 let [hour, minute] = time.split(":");
 hour = parseInt(hour);
-
 let ampm = hour >= 12 ? "PM" : "AM";
-
-hour = hour % 12;
-hour = hour ? hour : 12;
-
-return hour.toString().padStart(2,'0') + ":" + minute + " " + ampm;
+hour = hour % 12 || 12;
+return hour + ":" + minute + " " + ampm;
 }
 
 function showHabits() {
@@ -201,7 +204,11 @@ output += `
 
 if (h.name === "Water") water += Number(h.value);
 if (h.name === "Sleep") sleep += Number(h.value);
-if (h.name === "Exercise") exercise += Number(h.value);
+
+if (h.name === "Exercise") {
+if(h.unit === "h") exercise += Number(h.value) * 60;
+else exercise += Number(h.value);
+}
 
 }
 
@@ -209,29 +216,46 @@ if (h.name === "Exercise") exercise += Number(h.value);
 
 document.getElementById("tableBody").innerHTML = output;
 
+// Empty state
+if(output === ""){
+document.getElementById("tableBody").innerHTML =
+"<tr><td colspan='5' class='text-center text-muted'>No data added yet</td></tr>";
+}
+
 // Cards
 document.getElementById("waterCard").innerText = water + "L";
 document.getElementById("sleepCard").innerText = sleep + "h";
 document.getElementById("exerciseCard").innerText = exercise + "m";
 
 // Remaining
-document.getElementById("waterRemain").innerText = "Remaining: " + Math.max(waterTarget - water, 0) + "L";
-document.getElementById("sleepRemain").innerText = "Remaining: " + Math.max(sleepTarget - sleep, 0) + "h";
-document.getElementById("exerciseRemain").innerText = "Remaining: " + Math.max(exerciseTarget - exercise, 0) + "m";
+document.getElementById("waterRemain").innerText =
+"Remaining: " + Math.max(waterTarget - water, 0) + "L";
+
+document.getElementById("sleepRemain").innerText =
+"Remaining: " + Math.max(sleepTarget - sleep, 0) + "h";
+
+// ✅ FIXED EXERCISE REMAINING (always minutes)
+let remEx = Math.max(exerciseTarget - exercise, 0);
+document.getElementById("exerciseRemain").innerText =
+"Remaining: " + remEx + " min";
 
 // Progress
-let waterPercent = Math.min((water / waterTarget) * 100, 100);
-let sleepPercent = Math.min((sleep / sleepTarget) * 100, 100);
-let exercisePercent = Math.min((exercise / exerciseTarget) * 100, 100);
+let wp = Math.min((water / waterTarget) * 100, 100);
+let sp = Math.min((sleep / sleepTarget) * 100, 100);
+let ep = Math.min((exercise / exerciseTarget) * 100, 100);
 
-document.getElementById("waterBar").style.width = waterPercent + "%";
-document.getElementById("waterBar").innerText = Math.round(waterPercent) + "%";
+document.getElementById("waterBar").style.width = wp + "%";
+document.getElementById("waterBar").innerText = Math.round(wp) + "%";
 
-document.getElementById("sleepBar").style.width = sleepPercent + "%";
-document.getElementById("sleepBar").innerText = Math.round(sleepPercent) + "%";
+document.getElementById("sleepBar").style.width = sp + "%";
+document.getElementById("sleepBar").innerText = Math.round(sp) + "%";
 
-document.getElementById("exerciseBar").style.width = exercisePercent + "%";
-document.getElementById("exerciseBar").innerText = Math.round(exercisePercent) + "%";
+document.getElementById("exerciseBar").style.width = ep + "%";
+document.getElementById("exerciseBar").innerText = Math.round(ep) + "%";
+
+// Summary
+document.getElementById("summaryText").innerText =
+`Water: ${water}/4L | Sleep: ${sleep}/8h | Exercise: ${exercise}/60m`;
 
 }
 
@@ -243,7 +267,7 @@ let unit = document.getElementById("unit").value;
 let date = document.getElementById("date").value;
 let time = document.getElementById("time").value;
 
-if (value === "" || date === "" || time === "") {
+if (!value || !date || !time) {
 alert("Fill all fields");
 return;
 }
@@ -253,17 +277,20 @@ alert("Value must be positive");
 return;
 }
 
-// Convert time here
+// Limits
+if(name === "Water" && value > 10){ alert("Max 10L"); return; }
+if(name === "Sleep" && value > 24){ alert("Max 24h"); return; }
+if(name === "Exercise" && value > 300){ alert("Max 300 min"); return; }
+
 let finalTime = convertTo12Hour(time);
 
 habits.push({ name, value, unit, date, time: finalTime });
 
 localStorage.setItem("habits", JSON.stringify(habits));
 
-showHabits();
-
 document.getElementById("value").value = "";
 
+showHabits();
 }
 
 function deleteHabit(index) {
@@ -273,9 +300,11 @@ showHabits();
 }
 
 function resetData() {
-localStorage.clear();
+if(confirm("Are you sure you want to delete all data?")){
+localStorage.removeItem("habits");
 habits = [];
 showHabits();
+}
 }
 
 showHabits();
