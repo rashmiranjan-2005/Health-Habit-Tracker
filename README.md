@@ -22,9 +22,8 @@ A responsive web-based habit tracking application designed to monitor and analyz
 
 ## 📸 Preview
 
-<img src="Screenshot_1.png" width="600"/>
-
-<img src="Screenshot_2.png" width="600"/>
+![Screenshot 1](Screenshot.png)
+![Screenshot 2](Screenshot_2.png)
 
 📌 Author
 
