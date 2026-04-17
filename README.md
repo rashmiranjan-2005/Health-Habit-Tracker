@@ -20,12 +20,11 @@ A responsive web-based habit tracking application designed to monitor and analyz
 
 👉 https://rashmiranjan-2005.github.io/Health-Habit-Tracker/
 
-📸 Screenshot
-
 ## 📸 Preview
 
-![App Screenshot](Screenshot_1.png)
-![App Screenshot](Screenshot_2.png)
+<img src="Screenshot_1.png" width="600"/>
+
+<img src="Screenshot_2.png" width="600"/>
 
 📌 Author
 
